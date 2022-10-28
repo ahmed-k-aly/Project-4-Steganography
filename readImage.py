@@ -26,8 +26,8 @@ def binaryToASCII(chars):
     """
 def getLSBchannels(img, height, width):
     chars = []
+    count = 0
     for r in range(height):
-        count = 0
         for c in range(width):
             if count < 32:
                 chars.append(str(img[r,c,0] & 1)) # get LSB of first channel
