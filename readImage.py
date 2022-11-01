@@ -28,16 +28,20 @@ def main():
     height_1, width_2, channels = img.shape
     hidden_height, hidden_width = getImageHeaderFromMessage(hidingImage, height_1, width_2, 64)
     print("Hidden Height:", hidden_height, "Hidden Width:", hidden_width)
-    getImage(img, height, width, hidden_height, hidden_width)
     
     # print("Hidden Image has height: ", hidden_height, " width ", hidden_width)
     # # print("Height:", height, "Width:", width, "Number of Channels:", channels)
     # read pixels from hidingImage and write to img.
-    chars = readPixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
+    chars = readImagePixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
     img = convertBitsIntoImage(chars, hidden_height, hidden_width)
     imageio.imwrite("snake.png", img)
-    
-def readPixels(img, height, width, hidden_height, hidden_width):
+
+
+
+    """
+        Read pixels about a hidden image 
+    """    
+def readImagePixels(img, height, width, hidden_height, hidden_width):
     total_bits = 24 * hidden_height * hidden_width
     chars = []
     # create a new numpy array to store the pixels.
@@ -52,6 +56,10 @@ def readPixels(img, height, width, hidden_height, hidden_width):
 
     return chars
 
+
+    """
+        Given a char of bits, convert into an image.
+    """
 def convertBitsIntoImage(arr, height, width):
 
     chars = ''.join(arr)
@@ -73,7 +81,9 @@ def binaryToASCII(chars):
     n = binaryToInt(''.join(chars))
     return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode() # buggy code
 
-
+    """
+        Given a binary string, return an ascii string
+    """
 def binaryToAsciiString(s):
     return ''.join(chr(int(s[i*8:i*8+8],2)) for i in range(len(s)//8))
 
@@ -107,6 +117,11 @@ def getLSBchannels(img, height, width):
     # return string instead of array.
     return chars
 
+
+
+    """
+        Given an image, get metadata about the hidden text
+    """
 def getTextHeaderFromImage(img, height, width, header_size):
     textMetadata = []
     for r in range(height):
@@ -119,7 +134,7 @@ def getTextHeaderFromImage(img, height, width, header_size):
                 break
 
     textMetadata = ''.join(textMetadata)[0:header_size]
-    print(textMetadata)
+    
     return binaryToInt(textMetadata)
     
 
@@ -143,30 +158,6 @@ def getImageHeaderFromMessage(img, height, width, header_size):
     height, width = binaryToInt(image_metadata[:header_size//2]), binaryToInt(image_metadata[header_size//2:])
 
     return height, width    
-
-
-    """
-        Method to extract images
-    """
-def getImage(img, height, width, hidden_height, hiden_width):
-    bit_limit = hidden_height * hiden_width
-    count = 0
-    for r in range(hidden_height):
-        for c in range(hiden_width):
-            img[r, c][0] = 0
-            img[r, c][1] = img[r, c, 1]
-            img[r, c][2] = 128 
-                # count += 1
-
-    imageio.imwrite("altered_py.png", img)
-
-
-
-
-
-
-
-
 
 
     """
