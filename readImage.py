@@ -6,7 +6,7 @@ def main():
     img = imageio.imread("sampleImages/hide_text.png")
     height, width, _ = img.shape
     print("Height:", height, "Width:", width)
-    chars = getLSBchannels(img, height, width)
+    chars = getTextChars(img, height, width)
     #print chars as a string of 0s and 1s
 
     # # convert binary to ASCII
@@ -30,10 +30,10 @@ def main():
     """
         Read pixels about a hidden image 
     """    
-def readImagePixels(img, height, width, hidden_height, hidden_width):
-    total_bits = 24 * hidden_height * hidden_width
+def readImagePixels(img, height, width, hidden_height, hidden_width, header_size=64):
+    total_bits = (header_size-1) + (24 * hidden_height * hidden_width)
+    # create a new  array to store the pixels.
     chars = []
-    # create a new numpy array to store the pixels.
     for r in range(height):
         for c in range(width): 
             if(len(chars) < total_bits):
@@ -43,7 +43,7 @@ def readImagePixels(img, height, width, hidden_height, hidden_width):
             else: 
                 break
 
-    return chars
+    return chars[header_size:]
 
 
     """
@@ -87,7 +87,7 @@ def binaryToInt(binaryArray):
     """
     Method that returns an array with the value of the least significant bit of each pixel channel until it can construct three double-words.
     """
-def getLSBchannels(img, height, width):
+def getTextChars(img, height, width):
     chars = []
     count = 0
     numCharsInHiddenText = getTextHeaderFromImage(img, height, width, 32)
