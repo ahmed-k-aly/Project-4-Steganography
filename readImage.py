@@ -11,17 +11,10 @@ def main():
     print("Height:", height, "Width:", width)
     chars = getLSBchannels(img, height, width)
     #print chars as a string of 0s and 1s
-    text = binaryToAsciiString(''.join(chars))
-    # remove the first four characters as they are not part of the message.
-    #text = text[4:]
-    print(text)
-    
-    # # get header.
-
 
     # # convert binary to ASCII
-    # chars = binaryToAsciiString(''.join(chars))
-    # writeToFile(chars, "message.txt")
+    text = binaryToAsciiString(''.join(chars))
+    writeToFile(text, "hidden_message.txt")
 
     # # get hidden image.
     hidingImage = imageio.imread("sampleImages/hide_image.png")
@@ -32,6 +25,8 @@ def main():
     # read pixels from hidingImage and write to img.
     chars = readImagePixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
     img = convertBitsIntoImage(chars, hidden_height, hidden_width)
+    imageio.imwrite("hidden_image.png", img)
+
 
 
 
@@ -97,19 +92,22 @@ def binaryToInt(binaryArray):
 def getLSBchannels(img, height, width):
     chars = []
     count = 0
-    textSize = getTextHeaderFromImage(img, height, width, 32)
-    print("Text Size:", textSize)
+    numCharsInHiddenText = getTextHeaderFromImage(img, height, width, 32)
+    bitSizeOfHeader = len(str(numCharsInHiddenText)) * 8
+    bitSizeOfText = (numCharsInHiddenText * 8) + bitSizeOfHeader
     for r in range(height):
         for c in range(width):
-            if count < 1526: # string ends at char 1526 i think.
+            if count < bitSizeOfText: # string ends at char 1526 i think.
                 chars.append(str(img[r,c,0] & 1)) # get LSB of first channel 
                 chars.append(str(img[r,c,1] & 1)) # get LSB of second channel
                 chars.append(str(img[r,c,2] & 1)) # get LSB of third channel
-                count += 1
+                count = len(chars)
             else: 
                 break
     
-    print(len(chars))
+
+    # remove the header from our chars
+    chars = chars[bitSizeOfHeader:]
         
     # return string instead of array.
     return chars
