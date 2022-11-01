@@ -10,22 +10,62 @@ def main():
     height, width, _ = img.shape
     print("Height:", height, "Width:", width)
     chars = getLSBchannels(img, height, width)
-    #assert(len(chars) == 32 * 3)
-    # get header.
-   
+    #print chars as a string of 0s and 1s
+    text = binaryToAsciiString(''.join(chars))
+    # remove the first four characters as they are not part of the message.
+    #text = text[4:]
+    print(text)
+    
+    # # get header.
 
-    # convert binary to ASCII
-    chars = binaryToAsciiString(''.join(chars))
-    writeToFile(chars, "message.txt")
 
-    # get hidden image.
+    # # convert binary to ASCII
+    # chars = binaryToAsciiString(''.join(chars))
+    # writeToFile(chars, "message.txt")
+
+    # # get hidden image.
     hidingImage = imageio.imread("sampleImages/hide_image.png")
     height_1, width_2, channels = img.shape
     hidden_height, hidden_width = getImageHeaderFromMessage(hidingImage, height_1, width_2, 64)
+    print("Hidden Height:", hidden_height, "Hidden Width:", hidden_width)
     getImage(img, height, width, hidden_height, hidden_width)
     
-    print("Hidden Image has height: ", hidden_height, " width ", hidden_width)
-    # print("Height:", height, "Width:", width, "Number of Channels:", channels)
+    # print("Hidden Image has height: ", hidden_height, " width ", hidden_width)
+    # # print("Height:", height, "Width:", width, "Number of Channels:", channels)
+    # read pixels from hidingImage and write to img.
+    chars = readPixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
+    img = convertBitsIntoImage(chars, hidden_height, hidden_width)
+    imageio.imwrite("snake.png", img)
+    
+def readPixels(img, height, width, hidden_height, hidden_width):
+    total_bits = 24 * hidden_height * hidden_width
+    chars = []
+    # create a new numpy array to store the pixels.
+    for r in range(height):
+        for c in range(width): 
+            if(len(chars) < total_bits):
+                chars.append(str(img[r,c,0] & 1)) # get LSB of first channel
+                chars.append(str(img[r,c,1] & 1)) # get LSB of second channel
+                chars.append(str(img[r,c,2] & 1)) # get LSB of third channel
+            else: 
+                break
+
+    return chars
+
+def convertBitsIntoImage(arr, height, width):
+
+    chars = ''.join(arr)
+    result = []
+    starter = 0
+    for c in range(len(chars)):
+        if c % 8 == 0:
+            x = binaryToInt(chars[starter:starter + 8])
+            result.append(x)
+            starter += 8
+
+    # convert 1D array to 3D array.
+    # https://stackoverflow.com/questions/32591211/convert-1d-array-to-3d-array
+    return np.reshape(result, (height, width, 3))
 
 def binaryToASCII(chars):
     # convert binary to ASCII
@@ -51,16 +91,18 @@ def getLSBchannels(img, height, width):
     chars = []
     count = 0
     textSize = getTextHeaderFromImage(img, height, width, 32)
+    print("Text Size:", textSize)
     for r in range(height):
         for c in range(width):
             if count < 1526: # string ends at char 1526 i think.
-                chars.append(str(img[r,c,0] & 1)) # get LSB of first channel
+                chars.append(str(img[r,c,0] & 1)) # get LSB of first channel 
                 chars.append(str(img[r,c,1] & 1)) # get LSB of second channel
                 chars.append(str(img[r,c,2] & 1)) # get LSB of third channel
                 count += 1
             else: 
                 break
     
+    print(len(chars))
         
     # return string instead of array.
     return chars
@@ -77,8 +119,8 @@ def getTextHeaderFromImage(img, height, width, header_size):
                 break
 
     textMetadata = ''.join(textMetadata)[0:header_size]
-
-    return binaryToASCII(textMetadata)
+    print(textMetadata)
+    return binaryToInt(textMetadata)
     
 
 
@@ -97,8 +139,7 @@ def getImageHeaderFromMessage(img, height, width, header_size):
             else: 
                 break
            
-
-    image_metadata = ''.join(image_metadata)[0:header_size]
+    image_metadata = ''.join(image_metadata)[0:header_size] 
     height, width = binaryToInt(image_metadata[:header_size//2]), binaryToInt(image_metadata[header_size//2:])
 
     return height, width    
