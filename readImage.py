@@ -28,13 +28,10 @@ def main():
     height_1, width_2, channels = img.shape
     hidden_height, hidden_width = getImageHeaderFromMessage(hidingImage, height_1, width_2, 64)
     print("Hidden Height:", hidden_height, "Hidden Width:", hidden_width)
-    
-    # print("Hidden Image has height: ", hidden_height, " width ", hidden_width)
-    # # print("Height:", height, "Width:", width, "Number of Channels:", channels)
+
     # read pixels from hidingImage and write to img.
     chars = readImagePixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
     img = convertBitsIntoImage(chars, hidden_height, hidden_width)
-    imageio.imwrite("snake.png", img)
 
 
 
