@@ -62,7 +62,8 @@ def convertBitsIntoImage(arr, height, width):
 
     # convert 1D array to 3D array.
     # https://stackoverflow.com/questions/32591211/convert-1d-array-to-3d-array
-    return np.reshape(result, (height, width, 3))
+    return np.reshape(result, (height, width, 3)).astype(np.uint8)
+
 
 def binaryToASCII(chars):
     # convert binary to ASCII
