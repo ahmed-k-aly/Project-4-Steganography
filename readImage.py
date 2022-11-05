@@ -1,8 +1,20 @@
 import numpy as np
 import imageio.v2 as imageio 
+import glob
+import time
 
 
 def main():
+    # go through each file, and for each file expose patterns
+    files = [file for file in glob.glob("slideImages/*.png")]
+    for file_name in files:
+        name = file_name.split('/')[1]
+        print("Exposing...", name)
+        img = imageio.imread(file_name)
+        height, width, _ = img.shape
+        exposePatterns(img, height, width, name)
+
+
     img = imageio.imread("sampleImages/hide_text.png")
     height, width, _ = img.shape
     print("Height:", height, "Width:", width)
@@ -21,6 +33,7 @@ def main():
 
     # read pixels from hidingImage and write to img.
     chars = readImagePixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
+    
     img = convertBitsIntoImage(chars, hidden_height, hidden_width)
     imageio.imwrite("hidden_image.png", img)
 
@@ -93,6 +106,7 @@ def getTextChars(img, height, width):
     numCharsInHiddenText = getTextHeaderFromImage(img, height, width, 32)
     bitSizeOfHeader = len(str(numCharsInHiddenText)) * 8
     bitSizeOfText = (numCharsInHiddenText * 8) + bitSizeOfHeader
+    break_out_flag = False
     for r in range(height):
         for c in range(width):
             if count < bitSizeOfText: # string ends at char 1526 i think.
@@ -101,7 +115,11 @@ def getTextChars(img, height, width):
                 chars.append(str(img[r,c,2] & 1)) # get LSB of third channel
                 count = len(chars)
             else: 
+                break_out_flag = True
                 break
+
+        if break_out_flag:
+            break
     
 
     # remove the header from our chars
@@ -117,6 +135,7 @@ def getTextChars(img, height, width):
     """
 def getTextHeaderFromImage(img, height, width, header_size):
     textMetadata = []
+    break_out_flag = False
     for r in range(height):
         for c in range(width):
             if len(textMetadata) < header_size:
@@ -124,11 +143,29 @@ def getTextHeaderFromImage(img, height, width, header_size):
                 textMetadata.append(str(img[r,c,1] & 1))
                 textMetadata.append(str(img[r,c,2] & 1))
             else:
+                break_out_flag = True
                 break
+
+        if break_out_flag:
+            break
 
     textMetadata = ''.join(textMetadata)[0:header_size]
     
     return binaryToInt(textMetadata)
+
+def exposePatterns(img, height, width, image_name):
+    # make everything a one, make everything a zero.
+    for r in range(height):
+        for c in range(width):
+            img[r,c][0] = ((img[r, c][0] & 1) * 255)
+            img[r,c][1] = ((img[r, c][1] & 1) * 255) 
+            img[r,c][2] = ((img[r, c][2] & 1) * 255)
+            
+    ts = time.time()
+    file_name = "exposedImages/exposed_image_"+image_name+".png"
+    
+    imageio.imwrite(file_name, img)
+
     
 
 
@@ -138,6 +175,7 @@ def getTextHeaderFromImage(img, height, width, header_size):
     """
 def getImageHeaderFromMessage(img, height, width, header_size):
     image_metadata = []
+    break_out_flag = False
     for r in range(height):
         for c in range(width):
             if len(image_metadata) < header_size:
@@ -145,7 +183,10 @@ def getImageHeaderFromMessage(img, height, width, header_size):
                 image_metadata.append(str(img[r,c,1] & 1))
                 image_metadata.append(str(img[r,c,2] & 1))
             else: 
+                break_out_flag = True
                 break
+        if break_out_flag:
+            break
            
     image_metadata = ''.join(image_metadata)[0:header_size] 
     height, width = binaryToInt(image_metadata[:header_size//2]), binaryToInt(image_metadata[header_size//2:])
