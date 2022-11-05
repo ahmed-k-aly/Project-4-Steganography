@@ -5,37 +5,53 @@ import time
 
 
 def main():
-    # go through each file, and for each file expose patterns
-    files = [file for file in glob.glob("slideImages/*.png")]
-    for file_name in files:
-        name = file_name.split('/')[1]
-        print("Exposing...", name)
-        img = imageio.imread(file_name)
-        height, width, _ = img.shape
-        exposePatterns(img, height, width, name)
+    decodeImages()
 
+    # img = imageio.imread("sampleImages/hide_text.png")
+    # height, width, _ = img.shape
+    # print("Height:", height, "Width:", width)
+    # chars = getTextChars(img, height, width)
+    # #print chars as a string of 0s and 1s
 
-    img = imageio.imread("sampleImages/hide_text.png")
-    height, width, _ = img.shape
-    print("Height:", height, "Width:", width)
-    chars = getTextChars(img, height, width)
-    #print chars as a string of 0s and 1s
+    # # # convert binary to ASCII
+    # text = binaryToAsciiString(''.join(chars))
+    # writeToFile(text, "hidden_message.txt")
 
-    # # convert binary to ASCII
-    text = binaryToAsciiString(''.join(chars))
-    writeToFile(text, "hidden_message.txt")
+    # # # get hidden image.
+    # hidingImage = imageio.imread("sampleImages/hide_image.png")
+    # height_1, width_2, channels = img.shape
+    # hidden_height, hidden_width = getImageHeaderFromMessage(hidingImage, height_1, width_2, 64)
+    # print("Hidden Height:", hidden_height, "Hidden Width:", hidden_width)
 
-    # # get hidden image.
-    hidingImage = imageio.imread("sampleImages/hide_image.png")
-    height_1, width_2, channels = img.shape
-    hidden_height, hidden_width = getImageHeaderFromMessage(hidingImage, height_1, width_2, 64)
-    print("Hidden Height:", hidden_height, "Hidden Width:", hidden_width)
-
-    # read pixels from hidingImage and write to img.
-    chars = readImagePixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
+    # # read pixels from hidingImage and write to img.
+    # chars = readImagePixels(hidingImage, height_1, width_2, hidden_height, hidden_width)
     
-    img = convertBitsIntoImage(chars, hidden_height, hidden_width)
-    imageio.imwrite("hidden_image.png", img)
+    # img = convertBitsIntoImage(chars, hidden_height, hidden_width)
+    # imageio.imwrite("hidden_image.png", img)
+def decodeImages():
+    files = [file for file in glob.glob("projectImages/*.png")]
+    for file_name in files:
+        try:
+            print("reading...", file_name)
+            img = imageio.imread(file_name)
+            height, width, _ = img.shape
+            hidden_height, hidden_width = getImageHeaderFromMessage(img, height, width, 64)
+            if hidden_height < height  and hidden_width < width:
+                # assume there's an image and read image
+                chars = readImagePixels(img, height, width, hidden_height, hidden_width)
+                new_image = convertBitsIntoImage(chars, hidden_height, hidden_width)
+                name = "hidden-images/" + file_name.split('/')[1]
+                imageio.imwrite(name, new_image)
+            else:
+                # assume there's a text and read text
+                chars = getTextChars(img, height, width)
+                text = binaryToAsciiString(''.join(chars))
+                name = "hidden-texts/" + file_name.split('/')[1].replace('.png', '.txt')
+                writeToFile(text, name)
+        except Exception as err:
+            print(f"Unexpected {err=}, {type(err)=} on ", file_name)
+
+
 
 
 
@@ -47,6 +63,7 @@ def readImagePixels(img, height, width, hidden_height, hidden_width, header_size
     total_bits = (header_size-1) + (24 * hidden_height * hidden_width)
     # create a new  array to store the pixels.
     chars = []
+    break_out_flag = False
     for r in range(height):
         for c in range(width): 
             if(len(chars) < total_bits):
@@ -54,7 +71,11 @@ def readImagePixels(img, height, width, hidden_height, hidden_width, header_size
                 chars.append(str(img[r,c,1] & 1)) # get LSB of second channel
                 chars.append(str(img[r,c,2] & 1)) # get LSB of third channel
             else: 
+                break_out_flag = True
                 break
+
+        if break_out_flag:
+            break
 
     return chars[header_size:]
 
@@ -104,6 +125,7 @@ def getTextChars(img, height, width):
     chars = []
     count = 0
     numCharsInHiddenText = getTextHeaderFromImage(img, height, width, 32)
+    print("text has ", numCharsInHiddenText, " characters")
     bitSizeOfHeader = len(str(numCharsInHiddenText)) * 8
     bitSizeOfText = (numCharsInHiddenText * 8) + bitSizeOfHeader
     break_out_flag = False
@@ -162,7 +184,7 @@ def exposePatterns(img, height, width, image_name):
             img[r,c][2] = ((img[r, c][2] & 1) * 255)
             
     ts = time.time()
-    file_name = "exposedImages/exposed_image_"+image_name+".png"
+    file_name = "exposedImages/exposed_image_"+image_name
     
     imageio.imwrite(file_name, img)
 
