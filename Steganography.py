@@ -9,50 +9,14 @@ channels = ["Red", "Green", "Blue", "All"]
 
 
 def main():
-    img = imageio.imread("projectImages/Boyos.png")
-    file_title = "Boyos.png"
-    innerHeight, innerWidth = innerHeight, innerWidth = getImageHeaderFromSingleChannel(img, 0)
-    chars = readBitsFromSingleChannel(img, innerHeight, innerWidth, 0, 64)
-    new_image = convertBitsIntoImage(chars, innerHeight, innerWidth)
-    name = "hidden-images/ABEL_" + str(0) + file_title
-    imageio.imwrite(name, new_image)
-
-    flippedImage = flipChannelBits(imageio.imread(name))
-    new_name = "hidden-images/ABEL_flipped_" + str(0) + file_title
-    imageio.imwrite(new_name, flippedImage)
-    
-    # file_name = "projectImages/AlbumCover.png"
-    # file_title = file_name.split("/")[1]
-    # img = imageio.imread(file_name)
-    # innerHeight, innerWidth = getImageHeaderFromSingleChannel(img,1)
-    # chars = readBitsFromSingleChannel(img, innerHeight, innerWidth, 1)
-    # new_image = convertBitsIntoImage(chars, innerHeight, innerWidth)
-    # name = "hidden-images/" + channels[1] + file_title
-    # imageio.imwrite(name, new_image)
-    # flippedImage = flipChannelBits(imageio.imread(name))
-    # new_name = "hidden-images/flipped_" + channels[1] + "_" + file_title
-    # imageio.imwrite(new_name, flippedImage)
-
-    # exposeImg = imageio.imread(new_name)
-    # for y in range(3):
-    #     innerHeight, innerWidth = getImageHeaderFromSingleChannel(new_image,y)
-    #     print(innerHeight, innerWidth, " on channel ", channels[y])
-    # exposed_name = "exposed_ALL_" + file_title
-    # exposed_dark_name = "exposed_DARK_" + file_title
-    # exposed_light_name = "exposed_LIGHT_" + file_title
-
-    # exposePatterns(exposeImg, exposed_name)
-    # exposeDarkPatterns(exposeImg, exposed_dark_name)
-    # exposeLightPatterns(exposeImg, exposed_light_name)
-    
-
+    headerHunter()
     
 
 
         
 
 
-def readFilesAsUseful():
+def readFilesAsUsefulBasic():
     files = ["projectImages/StetchyYawnyBois.png", 
     "projectImages/FlyAway.png", 
     "projectImages/AlbumCover.png",
