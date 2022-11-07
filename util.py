@@ -173,6 +173,36 @@ def read_n_color_channels_individually_as_bytes(image, height, width, n=3):
             for i in range(n): # isolate each color channel
                 channels[i].append(image[r,c,i]) # add the pixel value to the channel
 
+def read_n_color_channels_individually_snake(image, height, width, n=3):
+    channels = []
+    for i in range(n): # isolate each color channel
+        channels.append(np.zeros((height, width))) # create a new channel for each color channel 
+    for r in range(height): # iterate through each pixel
+        if r % 2 == 0: # even row
+            for c in range(width): # iterate through each pixel
+                for i in range(n): # isolate each color channel
+                    channels[i][r,c] = image[r,c,i] # add the pixel value to the channel
+        else: # odd row
+            for c in range(width-1, -1, -1): # iterate through each pixel (reverse order)
+                for i in range(n): # isolate each color channel
+                    channels[i][r,c] = image[r,c,i] # add the pixel value to the channel
+    return channels # return the list of color channels
+
+def read_n_color_channels_individually_as_bytes_snake(image, height, width, n=3):
+    channels = [] # list of color channels
+    # create a list of n empty lists
+    for i in range(n):
+        channels.append([])
+    for r in range(height): # iterate through each pixel
+        if r % 2 == 0: # even row
+            for c in range(width): # iterate through each pixel
+                for i in range(n): # isolate each color channel
+                    channels[i].append(image[r,c,i]) # add the pixel value to the channel
+        else: # odd row
+            for c in range(width-1, -1, -1): # iterate through each pixel (reverse order)
+                for i in range(n): # isolate each color channel
+                    channels[i].append(image[r,c,i]) # add the pixel value to the channel
+    
 
 
 """Assumes we can have n image headers encoded right after each other as in the following format:
