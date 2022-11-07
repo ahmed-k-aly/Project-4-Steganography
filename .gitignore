@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+/exposedImages/*.png
+/exposedImages/dark-exposed/*.png
+/exposedImages/light-exposed/*.png
+/hidden-images/*.png
+/hidden-texts/*.txt
+/visualizedct/*.png
+/statisticalanalysis/*.png
