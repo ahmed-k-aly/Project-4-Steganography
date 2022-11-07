@@ -386,6 +386,81 @@ def read_n_bytes_y_LSB_snake_UP_DOWN(image, height, width, n, lsbNum, num_color_
             break
     return chars        
 
+
+"""
+READS UP_DOWN isolates n color channels and returns a matrix of the color channels independent of each other where a color channel is a 2D matrix of rows and columns
+"""
+def read_n_color_channels_individually_UP_DOWN(image, height, width, n=3):
+    channels = []
+    for i in range(n): # isolate each color channel
+        channels.append(np.zeros((height, width))) # create a new channel for each color channel 
+    for c in range(width): # iterate through each pixel
+        for r in range(height): # iterate through each pixel
+            for i in range(n): # isolate each color channel
+                channels[i][r,c] = image[r,c,i] # add the pixel value to the channel
+    return channels # return the list of color channels
+
+
+"""
+READS UP_DOWN similar to read_n_color_channels_individually but instead of returning a matrix of color channels,
+it returns a list of n lists where each of the n lists represent pixels in its respective color channel (rgb) 
+"""
+def read_n_color_channels_individually_as_bytes_UP_DOWN(image, height, width, n=3):
+    channels = [] # list of color channels
+    # create a list of n empty lists
+    for i in range(n):
+        channels.append([])
+    for c in range(width): # iterate through each pixel
+        for c in range(height): # iterate through each pixel
+            for i in range(n): # isolate each color channel
+                channels[i].append(image[r,c,i]) # add the pixel value to the channel
+
+
+"""
+READS UP_DOWN snake isolates n color channels and returns a matrix of the color channels independent of each other where a color channel is a 2D matrix of rows and columns
+"""    
+def read_n_color_channels_individually_UP_DOWN_snake(image, height, width, n=3):
+    channels = []
+    for i in range(n): # isolate each color channel
+        channels.append(np.zeros((height, width))) # create a new channel for each color channel 
+    for c in range(width): # iterate through each pixel
+        if c % 2 == 0: # odd columns go up to down
+            for r in range(height): # iterate through each pixel
+                for i in range(n): # isolate each color channel
+                    channels[i][r,c] = image[r,c,i] # add the pixel value to the channel
+        else: # odd columns go down to up
+            for r in reversed(range(height)): # iterate through each pixel
+                for i in range(n): # isolate each color channel
+                    channels[i][r,c] = image[r,c,i] # add the pixel value to the channel
+    return channels # return the list of color channels
+
+
+"""
+READS up_down snake similar to read_n_color_channels_individually but instead of returning a matrix of color channels,
+it returns a list of n lists where each of the n lists represent pixels in its respective color channel (rgb) 
+"""
+def read_n_color_channels_individually_as_bytes_UP_DOWN_snake(image, height, width, n=3):
+
+    channels = [] # list of color channels
+    # create a list of n empty lists
+    for i in range(n):
+        channels.append([])
+    for c in range(width): # iterate through each pixel
+        if c % 2 == 0: # odd columns go up to down
+            for r in range(height): # iterate through each pixel
+                for i in range(n): # isolate each color channel
+                    channels[i].append(image[r,c,i]) # add the pixel value to the channel
+        else: # odd columns go down to up
+            for r in reversed(range(height)): # iterate through each pixel
+                for i in range(n): # isolate each color channel
+                    channels[i].append(image[r,c,i]) # add the pixel value to the channel
+    
+
+"""
+_____________________________________________________________________________________________
+STATISTICAL FUNCTIONS
+"""
+
 """
 EXPERIMENTAL: uses 2d discrete cosine transform to decode the image
 """
