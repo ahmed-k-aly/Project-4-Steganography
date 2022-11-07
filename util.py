@@ -121,7 +121,7 @@ def read_n_bytes_y_LSB_snake(image, height, width, n, lsbNum, num_color_channels
     break_out_flag = False
     for r in range(height):
         if r % 2 == 0: # even row
-            for c in range(width):
+            for c in range(width): # read left to right
                 if len(chars) < n:
                     # read the first 3 LSBs for each color channel from highest to lowest
                     for i in range(num_color_channels):
@@ -130,8 +130,8 @@ def read_n_bytes_y_LSB_snake(image, height, width, n, lsbNum, num_color_channels
                 else: 
                     break_out_flag = True
                     break
-        else:
-            for c in range(width-1, -1, -1):
+        else: # odd row
+            for c in range(width-1, -1, -1): # read right to left (reverse order)
                 if len(chars) < n:
                     # read the first 3 LSBs for each color channel from highest to lowest
                     for i in range(num_color_channels):
@@ -143,6 +143,35 @@ def read_n_bytes_y_LSB_snake(image, height, width, n, lsbNum, num_color_channels
         if break_out_flag:
             break
     return chars
+
+
+"""
+isolates n color channels and returns a matrix of the color channels independent of each other where a color channel is a 2D matrix of rows and columns
+"""
+def read_n_color_channels_individually(image, height, width, n=3):
+    channels = []
+    for i in range(n): # isolate each color channel
+        channels.append(np.zeros((height, width))) # create a new channel for each color channel 
+    for r in range(height): # iterate through each pixel
+        for c in range(width): # iterate through each pixel
+            for i in range(n): # isolate each color channel
+                channels[i][r,c] = image[r,c,i] # add the pixel value to the channel
+    return channels # return the list of color channels
+
+"""
+
+similar to read_n_color_channels_individually but instead of returning a matrix of color channels,
+it returns a list of n lists where each of the n lists represent pixels in its respective color channel (rgb) 
+"""
+def read_n_color_channels_individually_as_bytes(image, height, width, n=3):
+    channels = [] # list of color channels
+    # create a list of n empty lists
+    for i in range(n):
+        channels.append([])
+    for r in range(height): # iterate through each pixel
+        for c in range(width): # iterate through each pixel
+            for i in range(n): # isolate each color channel
+                channels[i].append(image[r,c,i]) # add the pixel value to the channel
 
 
 
