@@ -116,6 +116,34 @@ def read_n_bytes_y_LSB(image, height, width, n, lsbNum, num_color_channels=3):
             break
     return chars
 
+def read_n_bytes_y_LSB_snake(image, height, width, n, lsbNum, num_color_channels=3):
+    chars = []
+    break_out_flag = False
+    for r in range(height):
+        if r % 2 == 0: # even row
+            for c in range(width):
+                if len(chars) < n:
+                    # read the first 3 LSBs for each color channel from highest to lowest
+                    for i in range(num_color_channels):
+                        for j in range(lsbNum):
+                            chars.append(str((image[r,c,i] & (2**(lsbNum-j-1))) >> (lsbNum-j-1)))
+                else: 
+                    break_out_flag = True
+                    break
+        else:
+            for c in range(width-1, -1, -1):
+                if len(chars) < n:
+                    # read the first 3 LSBs for each color channel from highest to lowest
+                    for i in range(num_color_channels):
+                        for j in range(lsbNum):
+                            chars.append(str((image[r,c,i] & (2**(lsbNum-j-1))) >> (lsbNum-j-1)))
+                else: 
+                    break_out_flag = True
+                    break
+        if break_out_flag:
+            break
+    return chars
+
 
 
 """Assumes we can have n image headers encoded right after each other as in the following format:
@@ -296,6 +324,38 @@ def read_n_bytes_y_LSB_UP_DOWN(image, height, width, n, lsbNum, num_color_channe
             break
     return chars
 
+"""
+Reads n bytes from the image using lsbNum least significant bits from each color channel in 
+a snake pattern(from up to down then down to up).
+"""
+def read_n_bytes_y_LSB_snake_UP_DOWN(image, height, width, n, lsbNum, num_color_channels=3): 
+    chars = []
+    break_out_flag = False
+    # loop over the pixels in a snake pattern (up, down, up, down, etc.)
+    for c in range(width):
+        if c % 2 == 0: # odd columns go up to down
+            for r in range(height):
+                if len(chars) < n:
+                    # read the first 3 LSBs for each color channel from highest to lowest
+                    for i in range(num_color_channels):
+                        for j in range(lsbNum):
+                            chars.append(str((image[r,c,i] & (2**(lsbNum-j-1))) >> (lsbNum-j-1)))
+                else: 
+                    break_out_flag = True
+                    break
+        else: # odd columns go down to up
+            for r in reversed(range(height)):
+                if len(chars) < n:
+                    # read the first 3 LSBs for each color channel from highest to lowest
+                    for i in range(num_color_channels):
+                        for j in range(lsbNum):
+                            chars.append(str((image[r,c,i] & (2**(lsbNum-j-1))) >> (lsbNum-j-1)))
+                else: 
+                    break_out_flag = True
+                    break
+        if break_out_flag:
+            break
+    return chars        
 
 """
 EXPERIMENTAL: uses 2d discrete cosine transform to decode the image
