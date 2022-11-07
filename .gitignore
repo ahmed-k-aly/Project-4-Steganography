@@ -133,6 +133,6 @@ dmypy.json
 /exposedImages/dark-exposed/*.png
 /exposedImages/light-exposed/*.png
 /hidden-images/*.png
-/hidden-texts/*.png
+/hidden-texts/*.txt
 /visualizedct/*.png
 /statisticalanalysis/*.png
